@@ -42,4 +42,18 @@ public class RestaurantMapper {
 
     }
 
+    public static void updateEntity(
+        Restaurant restaurant,
+        RestaurantRequest request
+        ) { 
+            restaurant.setName(request.getName());
+            restaurant.setEmail(request.getEmail());
+            restaurant.setPhone(request.getPhone());
+            restaurant.setAddress(request.getAddress());
+
+            if (request.getActive() != null) {
+                restaurant.setActive(request.getActive());
+            }
+        }
+
 }

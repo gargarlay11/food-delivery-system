@@ -16,7 +16,9 @@ public class RestaurantController {
 
     private final RestaurantService restaurantService;
 
-    public RestaurantController(RestaurantService restaurantService) {
+    public RestaurantController(
+            RestaurantService restaurantService
+    ) {
         this.restaurantService = restaurantService;
     }
 
@@ -36,17 +38,35 @@ public class RestaurantController {
     public ResponseEntity<RestaurantResponse> getRestaurantById(
             @PathVariable Long id
     ) {
-        RestaurantResponse response =
-                restaurantService.getRestaurantById(id);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                restaurantService.getRestaurantById(id)
+        );
     }
 
     @GetMapping
-    public ResponseEntity<List<RestaurantResponse>> getAllRestaurants() {
-        List<RestaurantResponse> responses =
-                restaurantService.getAllRestaurants();
+    public ResponseEntity<List<RestaurantResponse>>
+    getAllRestaurants() {
+        return ResponseEntity.ok(
+                restaurantService.getAllRestaurants()
+        );
+    }
 
-        return ResponseEntity.ok(responses);
+    @PutMapping("/{id}")
+    public ResponseEntity<RestaurantResponse> updateRestaurant(
+            @PathVariable Long id,
+            @Valid @RequestBody RestaurantRequest request
+    ) {
+        return ResponseEntity.ok(
+                restaurantService.updateRestaurant(id, request)
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRestaurant(
+            @PathVariable Long id
+    ) {
+        restaurantService.deleteRestaurant(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
