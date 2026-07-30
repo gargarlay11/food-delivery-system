@@ -13,4 +13,11 @@ public interface RestaurantService {
 
     List<RestaurantResponse> getAllRestaurants();
 
+    RestaurantResponse updateRestaurant(
+        Long id,
+        RestaurantRequest request
+    );
+
+    void deleteRestaurant(Long id);
+
 }
