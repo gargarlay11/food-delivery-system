@@ -1,9 +1,8 @@
 package com.fooddelivery.backend.service;
 
+import com.fooddelivery.backend.dto.PageResponse;
 import com.fooddelivery.backend.dto.RestaurantRequest;
 import com.fooddelivery.backend.dto.RestaurantResponse;
-
-import java.util.List;
 
 public interface RestaurantService {
 
@@ -11,7 +10,13 @@ public interface RestaurantService {
 
     RestaurantResponse getRestaurantById(Long id);
 
-    List<RestaurantResponse> getAllRestaurants();
+    PageResponse<RestaurantResponse> getAllRestaurants(
+        String search,
+        int page,
+        int size,
+        String sortBy,
+        String sortDir
+    );
 
     RestaurantResponse updateRestaurant(
         Long id,

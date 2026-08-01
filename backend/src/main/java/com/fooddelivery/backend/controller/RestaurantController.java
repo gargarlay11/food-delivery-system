@@ -1,5 +1,6 @@
 package com.fooddelivery.backend.controller;
 
+import com.fooddelivery.backend.dto.PageResponse;
 import com.fooddelivery.backend.dto.RestaurantRequest;
 import com.fooddelivery.backend.dto.RestaurantResponse;
 import com.fooddelivery.backend.service.RestaurantService;
@@ -7,8 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
@@ -43,13 +42,34 @@ public class RestaurantController {
         );
     }
 
-    @GetMapping
-    public ResponseEntity<List<RestaurantResponse>>
-    getAllRestaurants() {
-        return ResponseEntity.ok(
-                restaurantService.getAllRestaurants()
-        );
-    }
+        @GetMapping
+        public ResponseEntity<PageResponse<RestaurantResponse>>
+        getAllRestaurants(
+                @RequestParam(required = false) String search,
+
+                @RequestParam(defaultValue = "0")
+                int page,
+
+                @RequestParam(defaultValue = "10")
+                int size,
+
+                @RequestParam(defaultValue = "id")
+                String sortBy,
+
+                @RequestParam(defaultValue = "asc")
+                String sortDir
+        ) {
+        PageResponse<RestaurantResponse> response =
+                restaurantService.getAllRestaurants(
+                        search,
+                        page,
+                        size,
+                        sortBy,
+                        sortDir
+                );
+
+        return ResponseEntity.ok(response);
+        }
 
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantResponse> updateRestaurant(
