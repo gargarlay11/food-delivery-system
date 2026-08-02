@@ -14,7 +14,6 @@ import com.fooddelivery.backend.service.RestaurantService;
 import org.springframework.stereotype.Service;
 import com.fooddelivery.backend.exception.DuplicateRestaurantEmailException;
 import com.fooddelivery.backend.exception.RestaurantNotFoundException;
-import java.util.List;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
