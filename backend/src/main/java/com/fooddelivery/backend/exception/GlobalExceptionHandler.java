@@ -122,4 +122,41 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(response);
     }
+
+    @ExceptionHandler(MenuItemNotFoundException.class)
+        public ResponseEntity<ApiErrorResponse> handleMenuItemNotFound(
+            MenuItemNotFoundException exception
+        ) {
+
+        ApiErrorResponse response =
+            new ApiErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+            );
+
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(response);
+        }
+
+    @ExceptionHandler(DuplicateMenuItemException.class)
+        public ResponseEntity<ApiErrorResponse> handleDuplicateMenuItem(
+        DuplicateMenuItemException exception
+        ) {
+
+        ApiErrorResponse response =
+            new ApiErrorResponse(
+                    HttpStatus.CONFLICT.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+            );
+
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(response);
+        }
+    
 }
