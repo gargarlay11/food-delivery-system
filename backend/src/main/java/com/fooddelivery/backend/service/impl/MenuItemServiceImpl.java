@@ -17,6 +17,9 @@ import com.fooddelivery.backend.service.MenuItemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.web.multipart.MultipartFile;
+import com.fooddelivery.backend.service.ImageStorageService;
+
 import java.util.List;
 
 @Service
@@ -27,14 +30,18 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final RestaurantRepository restaurantRepository;
     private final MenuCategoryRepository menuCategoryRepository;
 
+    private final ImageStorageService imageStorageService;
+
     public MenuItemServiceImpl(
             MenuItemRepository menuItemRepository,
             RestaurantRepository restaurantRepository,
-            MenuCategoryRepository menuCategoryRepository
+            MenuCategoryRepository menuCategoryRepository,
+            ImageStorageService imageStorageService
     ) {
         this.menuItemRepository = menuItemRepository;
         this.restaurantRepository = restaurantRepository;
         this.menuCategoryRepository = menuCategoryRepository;
+        this.imageStorageService = imageStorageService;
     }
 
     @Override
@@ -308,4 +315,95 @@ public class MenuItemServiceImpl implements MenuItemService {
 
         return value.trim();
     }
+
+        @Override
+        public MenuItemResponse uploadMenuItemImage(
+                Long restaurantId,
+                Long menuItemId,
+                MultipartFile file
+        ) {
+
+                getRestaurant(restaurantId);
+
+                MenuItem menuItem =
+                getMenuItem(menuItemId);
+
+                validateMenuItemBelongsToRestaurant(
+                  menuItem,
+                 restaurantId
+         );
+
+        String oldImageUrl =
+            menuItem.getImageUrl();
+
+        String newImageUrl =
+            imageStorageService
+                    .storeMenuItemImage(file);
+
+        menuItem.setImageUrl(
+            newImageUrl
+        );
+
+         MenuItem updatedMenuItem =
+            menuItemRepository.save(
+                    menuItem
+            );
+
+        if (
+                oldImageUrl != null
+                && !oldImageUrl.isBlank()
+        ) {
+                imageStorageService
+                        .deleteMenuItemImage(
+                                oldImageUrl
+                        );
+        }
+
+                return MenuItemMapper.toResponse(
+                        updatedMenuItem
+                );
+        }
+        
+        @Override
+        public MenuItemResponse deleteMenuItemImage(
+                Long restaurantId,
+                Long menuItemId
+        ) {
+
+                getRestaurant(restaurantId);
+
+                MenuItem menuItem =
+                        getMenuItem(menuItemId);
+
+                validateMenuItemBelongsToRestaurant(
+                        menuItem,
+                        restaurantId
+                );
+
+                String imageUrl =
+                        menuItem.getImageUrl();
+
+                if (
+                        imageUrl != null
+                        && !imageUrl.isBlank()
+                ) {
+
+                        imageStorageService
+                                .deleteMenuItemImage(
+                                        imageUrl
+                                );
+
+                        menuItem.setImageUrl(null);
+                }
+
+                MenuItem updatedMenuItem =
+                        menuItemRepository.save(
+                                menuItem
+                        );
+
+                return MenuItemMapper.toResponse(
+                        updatedMenuItem
+                );
+        }
+
 }

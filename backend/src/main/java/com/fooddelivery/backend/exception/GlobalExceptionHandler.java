@@ -158,5 +158,27 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.CONFLICT)
             .body(response);
         }
+
+    @ExceptionHandler(
+        ImageStorageException.class
+    )
+
+    public ResponseEntity<ApiErrorResponse>
+        handleImageStorageException(
+            ImageStorageException exception
+    ) {
+
+        ApiErrorResponse response =
+            new ApiErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                Map.of(),
+                LocalDateTime.now()
+            );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+    }
     
 }
