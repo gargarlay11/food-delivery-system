@@ -5,6 +5,8 @@ import com.fooddelivery.backend.dto.MenuItemResponse;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface MenuItemService {
 
     MenuItemResponse create(
@@ -31,5 +33,16 @@ public interface MenuItemService {
     void delete(
             Long restaurantId,
             Long menuItemId
+    );
+
+    MenuItemResponse uploadMenuItemImage(
+        Long restaurantId,
+        Long menuItemId,
+        MultipartFile file
+    );
+
+    MenuItemResponse deleteMenuItemImage(
+        Long restaurantId,
+        Long menuItemId
     );
 }

@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -96,4 +98,41 @@ public class MenuItemController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping(
+        value = "/{menuItemId}/image",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+
+        public ResponseEntity<MenuItemResponse> uploadMenuItemImage(
+                @PathVariable Long restaurantId,
+                @PathVariable Long menuItemId,
+                @RequestParam("file") MultipartFile file
+        ) {
+
+        MenuItemResponse response =
+                menuItemService.uploadMenuItemImage(
+                        restaurantId,
+                        menuItemId,
+                        file
+                );
+
+        return ResponseEntity.ok(response);
+        }
+
+        @DeleteMapping("/{menuItemId}/image")
+        public ResponseEntity<MenuItemResponse> deleteMenuItemImage(
+                @PathVariable Long restaurantId,
+                @PathVariable Long menuItemId
+        ) {
+
+         MenuItemResponse response =
+            menuItemService.deleteMenuItemImage(
+                    restaurantId,
+                    menuItemId
+        );
+
+        return ResponseEntity.ok(response);
+        }
+
 }
