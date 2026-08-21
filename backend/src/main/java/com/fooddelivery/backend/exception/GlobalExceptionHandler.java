@@ -180,5 +180,70 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.BAD_REQUEST)
             .body(response);
     }
+
+    @ExceptionHandler(
+        UserAlreadyExistsException.class
+    )
+    public ResponseEntity<ApiErrorResponse>
+    handleUserAlreadyExists(
+            UserAlreadyExistsException exception
+    ) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(
+                    HttpStatus.CONFLICT.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @ExceptionHandler(
+        InvalidCredentialsException.class
+    )
+    public ResponseEntity<ApiErrorResponse>
+    handleInvalidCredentials(
+            InvalidCredentialsException exception
+    ) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(response);
+    }
+
+    @ExceptionHandler(
+        RoleNotFoundException.class
+    )
+    public ResponseEntity<ApiErrorResponse>
+    handleRoleNotFound(
+            RoleNotFoundException exception
+    ) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+                );
+
+        return ResponseEntity
+                .status(
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                )
+                .body(response);
+    }
     
 }

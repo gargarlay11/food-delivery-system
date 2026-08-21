@@ -326,12 +326,12 @@ public class MenuItemServiceImpl implements MenuItemService {
                 getRestaurant(restaurantId);
 
                 MenuItem menuItem =
-                getMenuItem(menuItemId);
+                        getMenuItem(menuItemId);
 
                 validateMenuItemBelongsToRestaurant(
-                  menuItem,
-                 restaurantId
-         );
+                        menuItem,
+                        restaurantId
+                );
 
         String oldImageUrl =
             menuItem.getImageUrl();
