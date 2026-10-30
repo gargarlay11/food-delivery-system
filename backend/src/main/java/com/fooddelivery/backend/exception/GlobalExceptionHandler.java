@@ -245,5 +245,26 @@ public class GlobalExceptionHandler {
                 )
                 .body(response);
     }
+
+    @ExceptionHandler(
+        InvalidPasswordResetTokenException.class
+    )
+    public ResponseEntity<ApiErrorResponse>
+    handleInvalidPasswordResetToken(
+            InvalidPasswordResetTokenException exception
+    ) {
+
+        ApiErrorResponse response =
+                new ApiErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    exception.getMessage(),
+                    Map.of(),
+                    LocalDateTime.now()
+                );
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
+    }
     
 }

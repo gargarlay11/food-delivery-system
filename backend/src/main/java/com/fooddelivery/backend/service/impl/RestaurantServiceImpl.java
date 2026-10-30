@@ -10,36 +10,82 @@ import com.fooddelivery.backend.dto.RestaurantResponse;
 import com.fooddelivery.backend.entity.Restaurant;
 import com.fooddelivery.backend.mapper.RestaurantMapper;
 import com.fooddelivery.backend.repository.RestaurantRepository;
+import com.fooddelivery.backend.repository.UserRepository;
 import com.fooddelivery.backend.service.RestaurantService;
 import org.springframework.stereotype.Service;
 import com.fooddelivery.backend.exception.DuplicateRestaurantEmailException;
 import com.fooddelivery.backend.exception.RestaurantNotFoundException;
+
+import com.fooddelivery.backend.entity.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
 
+    private final UserRepository userRepository;
+
     public RestaurantServiceImpl(
-            RestaurantRepository restaurantRepository
+            RestaurantRepository restaurantRepository,
+            UserRepository userRepository
     ) {
         this.restaurantRepository = restaurantRepository;
+        this.userRepository = userRepository;
     }
 
         @Override
-        public RestaurantResponse createRestaurant(RestaurantRequest request) {
+        public RestaurantResponse createRestaurant(
+                RestaurantRequest request
+        ) {
 
-                if (restaurantRepository.existsByEmail(request.getEmail())) {
-                throw new DuplicateRestaurantEmailException(request.getEmail());
-                }
+        if (
+                restaurantRepository.existsByEmail(
+                        request.getEmail()
+                )
+        ) {
+                throw new DuplicateRestaurantEmailException(
+                        request.getEmail()
+                );
+        }
 
-                Restaurant restaurant =
-                        RestaurantMapper.toEntity(request);
+        // 1. JWT က authenticate လုပ်ထားတဲ့ user ကိုယူမယ်
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-                Restaurant savedRestaurant =
-                        restaurantRepository.save(restaurant);
+        // 2. Authentication ထဲက login email ကိုယူမယ်
+        String email =
+                authentication.getName();
 
-                return RestaurantMapper.toResponse(savedRestaurant);
+        // 3. အဲဒီ email နဲ့ User ကို database ထဲရှာမယ်
+        User owner =
+                userRepository
+                        .findByEmailIgnoreCase(email)
+                        .orElseThrow(
+                                () -> new IllegalStateException(
+                                        "Authenticated user not found"
+                                )
+                        );
+
+        // 4. Request က Restaurant data ကို Entity ပြောင်းမယ်
+        Restaurant restaurant =
+                RestaurantMapper.toEntity(request);
+
+        // 5. Login ဝင်ထားတဲ့ user ကို restaurant owner အဖြစ်ချိတ်မယ်
+        restaurant.setOwner(owner);
+
+        // 6. Restaurant + owner_user_id ကို database ထဲ save မယ်
+        Restaurant savedRestaurant =
+                restaurantRepository.save(
+                        restaurant
+                );
+
+        return RestaurantMapper.toResponse(
+                savedRestaurant
+        );
         }
 
         @Override
@@ -108,11 +154,16 @@ public class RestaurantServiceImpl implements RestaurantService {
                 Long id,
                 RestaurantRequest request
         ) {
+                User currentUser = getCurrentUser();
+
                 Restaurant restaurant =
-                        restaurantRepository.findById(id)
-                                .orElseThrow(() ->
-                                        new RestaurantNotFoundException(id)
-                                );
+                        restaurantRepository.findByIdAndOwnerId(
+                                id,
+                                currentUser.getId()
+                )
+                .orElseThrow(() ->
+                        new RestaurantNotFoundException(id)
+                );
 
                 boolean emailChanged =
                         !restaurant.getEmail().equalsIgnoreCase(
@@ -141,14 +192,37 @@ public class RestaurantServiceImpl implements RestaurantService {
         
         @Override
         public void deleteRestaurant(Long id) {
+                User currentUser = getCurrentUser();
+
                 Restaurant restaurant =
-                        restaurantRepository.findById(id)
-                                .orElseThrow(() ->
-                                        new RestaurantNotFoundException(id)
-                                );
+                        restaurantRepository.findByIdAndOwnerId(
+                                id,
+                                currentUser.getId()
+                        )
+                .orElseThrow(() ->
+                        new RestaurantNotFoundException(id)
+                );
 
                 restaurantRepository.delete(restaurant);
         }    
 
+        private User getCurrentUser() {
+
+         Authentication authentication =
+            SecurityContextHolder
+                    .getContext()
+                    .getAuthentication();
+
+        String email =
+            authentication.getName();
+
+         return userRepository
+            .findByEmailIgnoreCase(email)
+            .orElseThrow(
+                    () -> new IllegalStateException(
+                            "Authenticated user not found"
+                    )
+            );
+        }
     
 }

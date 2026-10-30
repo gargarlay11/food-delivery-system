@@ -12,6 +12,10 @@ import com.fooddelivery.backend.dto.LoginRequest;
 import com.fooddelivery.backend.dto.RegisterRequest;
 import com.fooddelivery.backend.service.AuthService;
 
+import com.fooddelivery.backend.dto.ForgotPasswordRequest;
+import com.fooddelivery.backend.dto.ForgotPasswordResponse;
+import com.fooddelivery.backend.dto.ResetPasswordRequest;
+
 import jakarta.validation.Valid;
 
 @RestController
@@ -64,4 +68,36 @@ public class AuthController {
                 response
         );
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse>
+    forgotPassword(
+        @Valid
+        @RequestBody
+        ForgotPasswordRequest request
+    ) {
+
+    return ResponseEntity.ok(
+            authService.forgotPassword(
+                    request
+            )
+    );
+    }
+
+    @PostMapping("/reset-password")
+     public ResponseEntity<Void>
+     resetPassword(
+        @Valid
+        @RequestBody
+        ResetPasswordRequest request
+     ) {
+
+     authService.resetPassword(
+            request
+     );
+
+     return ResponseEntity.noContent().build();
+    }
+
+    
 }
