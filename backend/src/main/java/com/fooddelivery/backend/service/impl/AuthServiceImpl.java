@@ -13,13 +13,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fooddelivery.backend.dto.AuthResponse;
+import com.fooddelivery.backend.dto.ForgotPasswordRequest;
+import com.fooddelivery.backend.dto.ForgotPasswordResponse;
 import com.fooddelivery.backend.dto.LoginRequest;
 import com.fooddelivery.backend.dto.RegisterRequest;
+import com.fooddelivery.backend.dto.ResetPasswordRequest;
+import com.fooddelivery.backend.entity.PasswordResetToken;
 import com.fooddelivery.backend.entity.Role;
 import com.fooddelivery.backend.entity.User;
 import com.fooddelivery.backend.exception.InvalidCredentialsException;
+import com.fooddelivery.backend.exception.InvalidPasswordResetTokenException;
 import com.fooddelivery.backend.exception.RoleNotFoundException;
 import com.fooddelivery.backend.exception.UserAlreadyExistsException;
+import com.fooddelivery.backend.repository.PasswordResetTokenRepository;
 import com.fooddelivery.backend.repository.RoleRepository;
 import com.fooddelivery.backend.repository.UserRepository;
 import com.fooddelivery.backend.security.CustomUserDetailsService;
@@ -45,32 +51,39 @@ public class AuthServiceImpl
 
     private final JwtService jwtService;
 
+    private final PasswordResetTokenRepository
+            passwordResetTokenRepository;
+
     public AuthServiceImpl(
-            UserRepository userRepository,
-            RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager,
-            CustomUserDetailsService userDetailsService,
-            JwtService jwtService
+        UserRepository userRepository,
+        RoleRepository roleRepository,
+        PasswordEncoder passwordEncoder,
+        AuthenticationManager authenticationManager,
+        CustomUserDetailsService userDetailsService,
+        JwtService jwtService,
+        PasswordResetTokenRepository passwordResetTokenRepository
     ) {
 
-        this.userRepository =
-                userRepository;
+    this.userRepository =
+            userRepository;
 
-        this.roleRepository =
-                roleRepository;
+    this.roleRepository =
+            roleRepository;
 
-        this.passwordEncoder =
-                passwordEncoder;
+    this.passwordEncoder =
+            passwordEncoder;
 
-        this.authenticationManager =
-                authenticationManager;
+    this.authenticationManager =
+            authenticationManager;
 
-        this.userDetailsService =
-                userDetailsService;
+    this.userDetailsService =
+            userDetailsService;
 
-        this.jwtService =
-                jwtService;
+    this.jwtService =
+            jwtService;
+
+    this.passwordResetTokenRepository =
+            passwordResetTokenRepository;
     }
 
     @Override
@@ -250,4 +263,106 @@ public class AuthServiceImpl
                 roles
         );
     }
+
+    @Override
+    public ForgotPasswordResponse forgotPassword(
+            ForgotPasswordRequest request
+    ) {
+
+        String email =
+                request.getEmail()
+                        .trim()
+                        .toLowerCase();
+
+        User user =
+                userRepository
+                        .findByEmailIgnoreCase(
+                                email
+                        )
+                        .orElseThrow(
+                            () ->
+                                new InvalidCredentialsException()
+                        );
+
+        String token =
+                java.util.UUID
+                        .randomUUID()
+                        .toString();
+
+        PasswordResetToken resetToken =
+                new PasswordResetToken();
+
+        resetToken.setUser(user);
+
+        resetToken.setToken(
+                token
+        );
+
+        resetToken.setCreatedAt(
+                java.time.LocalDateTime.now()
+        );
+
+        resetToken.setExpiresAt(
+                java.time.LocalDateTime
+                        .now()
+                        .plusMinutes(30)
+        );
+
+        resetToken.setUsed(false);
+
+        passwordResetTokenRepository
+                .save(resetToken);
+
+        return new ForgotPasswordResponse(
+                "Password reset token generated",
+                token
+        );
+    }
+
+    @Override
+    public void resetPassword(
+            ResetPasswordRequest request
+    ) {
+
+        PasswordResetToken resetToken =
+                passwordResetTokenRepository
+                        .findByToken(
+                                request.getToken()
+                        )
+                        .orElseThrow(
+                            InvalidPasswordResetTokenException::new
+                        );
+
+        if (
+            Boolean.TRUE.equals(
+                resetToken.getUsed()
+            )
+            ||
+            resetToken
+                .getExpiresAt()
+                .isBefore(
+                    java.time.LocalDateTime.now()
+                )
+        ) {
+
+            throw new InvalidPasswordResetTokenException();
+        }
+
+        User user =
+                resetToken.getUser();
+
+        user.setPassword(
+                passwordEncoder.encode(
+                    request.getNewPassword()
+                )
+        );
+
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+
+        passwordResetTokenRepository
+                .save(resetToken);
+    }
+
 }

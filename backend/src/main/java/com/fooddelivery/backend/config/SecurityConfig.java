@@ -14,6 +14,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.fooddelivery.backend.security.JwtAuthenticationFilter;
 
+import org.springframework.http.HttpMethod;
+
 @Configuration
 public class SecurityConfig {
 
@@ -142,6 +144,12 @@ public class SecurityConfig {
                             "RESTAURANT",
                             "ADMIN"
                         )
+
+                        .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/restaurants"
+                        )
+                        .hasRole("RESTAURANT")
 
                         .anyRequest()
                         .authenticated()

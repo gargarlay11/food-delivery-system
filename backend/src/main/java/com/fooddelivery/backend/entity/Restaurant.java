@@ -11,6 +11,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 @Entity
 @Table(name = "restaurants")
 public class Restaurant {
@@ -33,6 +36,10 @@ public class Restaurant {
 
     @Column(nullable = false)
     private Boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_user_id")
+    private User owner;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -110,4 +117,12 @@ public class Restaurant {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }   
 }

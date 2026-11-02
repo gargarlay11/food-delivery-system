@@ -16,5 +16,15 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     Page<Restaurant> findByNameContainingIgnoreCase(
             String name,
             Pageable pageable
-    );    
+    );  
+    
+    Optional<Restaurant> findByIdAndOwnerId(
+        Long restaurantId,
+        Long ownerId
+    );
+
+    boolean existsByIdAndOwnerId(
+            Long restaurantId,
+            Long ownerId
+    );
 }
